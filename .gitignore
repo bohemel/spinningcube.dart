@@ -1,0 +1,10 @@
+*.dart.js
+*.dart.js.map
+*.dart.js.deps
+
+packages
+build
+
+.settings
+.buildlog
+.DS_Store
