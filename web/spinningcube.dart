@@ -38,11 +38,18 @@ class Point3D {
     return new Point3D(x, y, this.z);
   }
   
+  Point3D rotateAll(a) {
+    return new Point3D(this.x, this.y, this.z)
+      .rotateX(a)
+      .rotateY(a)
+      .rotateZ(a);
+  }
+  
   Point2D project(width, height, fov, distance) {
     double factor, x, y;
     factor = fov / (distance + this.z);
-    x = this.x * factor * width / 2;
-    y = this.y * factor * height / 2;
+    x = this.x * factor + width / 2;
+    y = this.y * factor + height / 2;
     return new Point2D(x, y);
   }
 }
@@ -78,5 +85,40 @@ void main() {
 
 num start;
 void loop(ts) {
+  num progress;
+  if (start == null)
+    start = ts;
+  progress = ts - start;
+  
+  // TODO: fix this mess
+  num rps = 0.1;
+  num angle = (2 * PI * (progress / 1000) * rps) % (2 * PI);
+
+  // clear draw area
+  context.fillStyle = "#000";
   context.fillRect(0, 0, C_WIDTH, C_HEIGHT);
+
+  // projected points
+  List<Point2D> p_points = new List<Point2D>();
+  
+  for (int i = 0; i < cube.vertices.length; i++) {
+    // TODO: remove magic values
+    p_points.add(cube.vertices[i].rotateAll(angle).project(C_WIDTH, C_HEIGHT, 728, 5.5));
+  }
+  
+  context.strokeStyle = "#00CC00";
+  
+  for (int i = 0; i < cube.faces.length; i++) {
+    List<int> face = cube.faces[i];
+    context.beginPath();
+    // move to first point in face
+    context.moveTo(p_points[face[0]].x, p_points[face[0]].y);
+    for (int j = 1; j < face.length; j++) {
+      context.lineTo(p_points[face[j]].x, p_points[face[j]].y);
+    }
+    context
+      ..closePath()
+      ..stroke();
+  }
+  window.requestAnimationFrame(loop);
 }
